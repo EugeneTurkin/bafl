@@ -1,0 +1,18 @@
+span {
+    color: red
+}
+
+.trigger {
+    anchor-name: "--trigger";
+}
+
+#rename-rules {
+    margin: 0;
+    padding: 0;
+    position-anchor: "--trigger";
+    position-area: inline-end span-block-end;
+}
+
+#rename-rules:popover-open {
+    padding: 1rem;
+}

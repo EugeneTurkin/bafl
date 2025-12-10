@@ -1,8 +1,97 @@
 <html>
 <head>
     <title>Upload</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
 </head>
 <body>
-    <h1><a href="{{ url_for('yandex_upload') }}">{{ prompt }}</a></h1>
+  <form action="{{ url_for('submit_upload') }}" method="post">
+    <fieldset>
+      <legend>Загрузить файл</legend>
+      <label for="file-select">Файл для загрузки</label>
+      <select name="fname" id="file-select" required>
+        {% if prev_fname %}
+          <option value="{{ prev_fname }}"> {{ prev_fname }}</option>
+        {% else %}
+          <option value=""> -- Выберите файл --</option>
+        {% endif %}
+        {% for file in files %}
+          <option value="{{ file }}">{{ file }}</option>
+        {% endfor %}
+      </select>
+      {% for error in errors %}
+        {% if error["loc"][0] == "fname" %}
+          <br>
+          <span>{{ error["msg"] }}</span>
+        {% endif %}
+      {% endfor %}
+      <br>
+      <br>
+      <label for="rename">Переименуйте файл</label>
+      <input id="rename" name="rename" type="text" size="40" placeholder="Оставьте пустым чтобы не переименовывать файл!" value="{{ prev_rename }}">
+      <button class="trigger" id="huh" popovertarget="rename-rules" type="button" anchor-name="--huh-anchor"><img src="/static/huh.png" alt="Помощь" height="14" width="14"></button>
+      <div id="rename-rules" popover><p>Используйте только латиницу, кириллицу, символы !?.,"':;_ и пробелы. Название должно начинаться с буквы или цифры и не должно заканчиваться пробелом или символами _:; <br> Расширение в названии не указывайте.</p></div>
+      {% for error in errors %}
+        {% if error["loc"][0] == "rename" %}
+          <br>
+          <span>{{ error["msg"] }}</span>
+        {% endif %}
+      {% endfor %}
+      <br>
+      <br>
+      <label for="destinations">Выберите, куда загрузить:</label>
+      <ul id="destinations">
+        <li>
+          <label>
+            на файлообменник (YandexDisk)
+            {% if prev_dest_yandex %}
+              <input name="dest_yandex" type="checkbox" value="true" checked>
+            {% else %}
+              <input name="dest_yandex" type="checkbox" value="true" checked>
+            {% endif %}
+          </label>
+        </li>
+        <li>
+          <label>
+            на Москву, для Культуры и т.д. (FTP Комигор на Москве)
+            {% if prev_dest_ftp_moscow %}
+              <input name="dest_ftp_moscow" type="checkbox" checked disabled>
+            {% else %}
+              <input name="dest_ftp_moscow" type="checkbox" disabled>
+            {% endif %}
+          </label>
+        </li>
+        <li>
+          <label>
+            для утра (FTP Москва Утро Обмен)
+            {% if prev_dest_ftp_morning %}
+              <input name="dest_ftp_morning" type="checkbox" checked disabled>
+            {% else %}
+              <input name="dest_ftp_morning" type="checkbox" disabled>
+            {% endif %}
+          </label>
+        </li>
+      {% for error in errors %}
+        {% if error["loc"][0] == "destinations" %}
+          <br>
+          <span>{{ error["msg"] }}</span>
+        {% endif %}
+      {% endfor %}
+      </ul>
+      <label for="notif-email">Введите адрес почты, куда направить уведомление</label>
+      {% if prev_notif_email %}
+        <input id="notif-email" name="notif_email" type="email" size="24" value="{{ prev_notif_email }}" required>
+      {% else %}
+        <input id="notif-email" name="notif_email" type="email" size="24" value="vestikomi@gmail.com" required>
+      {% endif %}
+      {% for error in errors %}
+        {% if error["loc"][0] == "notif_email" %}
+          <br>
+          <span>{{ error["msg"] }}</span>
+        {% endif %}
+      {% endfor %}
+    </fieldset>
+    <button type="submit">Отправить</button>
+  </form>
+  <p>{{ errors }}</p>
 </body>
 </html>

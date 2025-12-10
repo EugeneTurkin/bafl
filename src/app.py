@@ -1,13 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-
-from src.routes import router
+from fastapi.templating import Jinja2Templates
+import types
+from src.exceptions import TestException
+from src.routes import router, templates
 
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(router=router)
 
 
-@app.get("/index")
-def index():
-    return "Hello World!"
+# @app.exception_handler(TestException)
+# async def test_exception_handler(request: Request, exc: TestException):
+#     redirect_home_url = request.url_for("home")
+
+#     return templates.TemplateResponse
