@@ -19,7 +19,7 @@
         {% endfor %}
       </select>
       {% for error in errors %}
-        {% if error["loc"][0] == "fname" %}
+        {% if error["loc"][0] == "fpath" %}
           <br>
           <span>{{ error["msg"] }}</span>
         {% endif %}
@@ -27,9 +27,13 @@
       <br>
       <br>
       <label for="rename">Переименуйте файл</label>
-      <input id="rename" name="rename" type="text" size="40" placeholder="Оставьте пустым чтобы не переименовывать файл!" value="{{ prev_rename }}">
+      {% if prev_rename %}
+        <input id="rename" name="rename" type="text" size="40" placeholder="Оставьте пустым чтобы не переименовывать файл!" value="{{ prev_rename }}">
+      {% else %}
+        <input id="rename" name="rename" type="text" size="40" placeholder="Оставьте пустым чтобы не переименовывать файл!" value="">
+      {% endif %}
       <button class="trigger" id="huh" popovertarget="rename-rules" type="button" anchor-name="--huh-anchor"><img src="/static/huh.png" alt="Помощь" height="14" width="14"></button>
-      <div id="rename-rules" popover><p>Используйте только латиницу, кириллицу, символы !?.,"':;_ и пробелы. Название должно начинаться с буквы или цифры и не должно заканчиваться пробелом или символами _:; <br> Расширение в названии не указывайте.</p></div>
+      <div id="rename-rules" popover><p>Длина от 5 до 120 символов. Используйте только латиницу, кириллицу, символы !?.,"':;_ и пробелы. Название должно начинаться с буквы или цифры и не должно заканчиваться пробелом или символами _:; <br> Расширение не указывайте.</p></div>
       {% for error in errors %}
         {% if error["loc"][0] == "rename" %}
           <br>
@@ -92,6 +96,9 @@
     </fieldset>
     <button type="submit">Отправить</button>
   </form>
+  <!-- currently this line prints out input which sometimes includes absolute system paths
+   if we ideed intend to leave it like that we need to make sure sensitive info doesnt get printed to users
+   and even if we dont want this to stay the same behaviour might be replicated via postman or smth -->
   <p>{{ errors }}</p>
 </body>
 </html>

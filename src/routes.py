@@ -1,55 +1,43 @@
 import os
 from typing import Annotated
 
-from fastapi import APIRouter, Form, Request, status
+from fastapi import APIRouter, BackgroundTasks, Form, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
-from pydantic_core import ErrorDetails
 
 from src import controllers
 from src.config import config
-from src.models import Destinations, UploadData
+from src.database import DB
+from src.models import Destinations, RequestData, UploadData
+from src.utils import convert_errors, CUSTOM_MESSAGES
 
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-CUSTOM_MESSAGES = {
-    "invalid_email": "Указанный некорректный адрес электронной почты",
-    "no_dest": "необходимо выбрать минимум одно место назначения для загрузки",
-    "no_fname": "необходимо выбрать файл для загрузки",
-    "string_pattern_mismatch": "введено некорректное имя файла: обратитесь к справке, нажав на кнопку справа от поля ввода",
-    "file_no_longer_exists": "указанный файлл более не существует в указанном расположении",
-}
-
-
-def convert_errors(
-    e: ValidationError, custom_messages: dict[str, str]
-) -> list[ErrorDetails]:
-    new_errors: list[ErrorDetails] = []
-    for error in e.errors():
-        custom_message = custom_messages.get(error['type'])
-        if custom_message:
-            ctx = error.get('ctx')
-            error['msg'] = (
-                custom_message.format(**ctx) if ctx else custom_message
-            )
-        new_errors.append(error)
-    return new_errors
-
-
 @router.get("/")
-async def home(request: Request):
+async def home(db: DB, request: Request):
+    tickets = await controllers.home(db=db)
     return templates.TemplateResponse(
-        request=request, name="home.html", context={"context": "Homepage"}
+        request=request, name="home.html",
+        context={
+            "context": "Homepage",
+            "client": f"{request.client.host}:{request.client.port}",
+            "tickets": tickets,
+        }
     )
 
 
 @router.get("/upload", response_class=HTMLResponse)
 async def upload(request: Request):
-    files = [file.name for file in os.scandir(config.NETWORK_STORAGE / config.STORAGE_DIR)]
+    # files = [file.name for file in os.scandir(config.NETWORK_STORAGE / config.STORAGE_DIR)]
+    files = [file.name for file in sorted(os.scandir(config.UPLOAD_DST), key=lambda x: x.stat().st_mtime, reverse=True) if file.is_file()]  # TODO: на этом и аналогичных вызовах, если хранилище недоступно, упадём с ошибкой. нужно обработать, прикрутить хэндлер, указать в сигне эндпоинта возможные статус коды. ещё надо проверять права потому что у сервера может не оказаться прав на чтение
+    try:
+        files.remove("Thumbs.db")
+    except ValueError:
+        pass
     return templates.TemplateResponse(
         request=request, name="upload.html", context={"files": files}
     )
@@ -57,6 +45,7 @@ async def upload(request: Request):
 
 @router.post("/upload")
 async def submit_upload(
+    db: DB,
     request: Request,
     fname: Annotated[str | None, Form()] = None,
     rename: Annotated[str | None, Form()] = None,
@@ -66,21 +55,26 @@ async def submit_upload(
     notif_email: Annotated[str | None, Form()] = None,
 ):
     try:
+        request_data = RequestData(request_host=f"{request.client.host}", request_port=f"{request.client.port}")
         destinations = Destinations(
             dest_yandex=dest_yandex,
             dest_ftp_moscow=dest_ftp_moscow,
             dest_ftp_morning=dest_ftp_morning,
         )
-        data=UploadData(
-            fname=fname,
+        upload_data=UploadData(
+            fpath=config.UPLOAD_DST / fname,
             rename=rename,
             destinations=destinations,
             notif_email=notif_email,
         )
-        UploadData.model_validate(data)
+        UploadData.model_validate(upload_data)
     except ValidationError as e:
         errors = convert_errors(e, CUSTOM_MESSAGES)
-        files = [file.name for file in os.scandir(config.NETWORK_STORAGE / config.STORAGE_DIR) if file.name != fname]
+        files = [file.name for file in sorted(os.scandir(config.UPLOAD_DST), key=lambda x: x.stat().st_mtime, reverse=True) if (file.is_file() and file.name != fname)]
+        try:
+            files.remove("Thumbs.db")
+        except ValueError:
+            pass
 
         return templates.TemplateResponse(
             request=request,
@@ -96,6 +90,8 @@ async def submit_upload(
                 "prev_dest_ftp_morning": dest_ftp_morning,
             },
         )
+
+    _ = await controllers.submit_upload(db, upload_data, request_data)
 
     redirect_home_url = request.url_for("home")
     return RedirectResponse(redirect_home_url, status_code=status.HTTP_303_SEE_OTHER)

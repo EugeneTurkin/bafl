@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-import types
-from src.exceptions import TestException
-from src.routes import router, templates
+
+from src.api import router as api_router
+from src.config import huey
+from src.routes import router
 
 
 app = FastAPI()
@@ -11,10 +11,4 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(router=router)
-
-
-# @app.exception_handler(TestException)
-# async def test_exception_handler(request: Request, exc: TestException):
-#     redirect_home_url = request.url_for("home")
-
-#     return templates.TemplateResponse
+app.include_router(router=api_router)

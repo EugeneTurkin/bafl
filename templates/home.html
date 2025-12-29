@@ -1,8 +1,66 @@
 <html>
 <head>
     <title>Home</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+</style>
 </head>
 <body>
     <h1>{{ context }}</h1>
+    <h2>Hello, {{ client }}!</h2>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <!-- add link column -->
+                <td>&nbsp;</td>
+                <td>Время создания</td>
+                <td>IP создателя</td>
+                <td>Время завершения</td>
+                <td>Статус</td>
+                <td>Куда загружаем</td>
+                <td>Исходное имя файла</td>
+                <td>Окончательное имя</td>
+                <td>Адрес получателя уведомления</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.created_at.strftime("%d.%m.%y %H:%M:%S") }}</td>
+                <td>{{ ticket.creation_ip }}</td>
+                {% if ticket.finished_at %}
+                    <td>{{ ticket.finished_at.strftime("%d.%m.%y %H:%M:%S") }}</td>
+                {% else %}
+                    <td>не завершено</td>
+                {% endif %}
+                <td>{{ ticket.status.value }}</td>
+                <td>{{ ticket.dst }}</td>
+                <td>{{ ticket.fname }}</td>
+                <!-- change when we have a final name in db model -->
+                {% if not ticket.rename %}
+                    <td>{{ ticket.fname }}</td>
+                {% else %}
+                    <td>{{ ticket.rename }}</td>
+                {% endif %}
+                <td>{{ ticket.notif_email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
