@@ -1,8 +1,8 @@
-"""wip
+"""wip1
 
-Revision ID: 6e66203216f4
+Revision ID: bc1f77881605
 Revises: 
-Create Date: 2025-12-18 15:40:42.312337
+Create Date: 2026-01-12 18:16:00.323029
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6e66203216f4'
+revision: str = 'bc1f77881605'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.create_table('ticket',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ticket_type', sa.String(), nullable=False),
-    sa.Column('created_at', sa.TIMESTAMP(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('creation_ip', sa.String(), nullable=True),
     sa.Column('finished_at', sa.DateTime(), nullable=True),
     sa.Column('status', sa.Enum('PENDING', 'ACCEPTED', 'COMPLETED', 'FAILED', name='status'), nullable=False),
@@ -35,6 +35,7 @@ def upgrade() -> None:
     sa.Column('src', sa.String(), nullable=False),
     sa.Column('dst', sa.String(), nullable=False),
     sa.Column('fname', sa.String(), nullable=False),
+    sa.Column('ext', sa.String(), nullable=False),
     sa.Column('rename', sa.String(), nullable=True),
     sa.Column('notif_email', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['id'], ['ticket.id'], ),

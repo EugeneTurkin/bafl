@@ -26,18 +26,19 @@ def change_ticket_status_returning_ticket(db: Session, id: int, status: Status, 
         ticket.finished_at = finished_at
     db.add(ticket)
     db.commit()
+    db.close()
     return ticket
 
 
 def get_upload_link(client, ticket: UploadTicket):
     spoofed_data = json.dumps({"os": "windows"}, separators=(',', ':'))
     headers = {"User-Agent": f"Yandex.Disk {spoofed_data}"}
-    yadisk_fpath = config.YADISK_DIR + (ticket.rename if ticket.rename else ticket.fname)
-    params = dict(path=yadisk_fpath)
+    yadisk_fpath_no_ext = config.YADISK_DIR + (ticket.rename if ticket.rename else ticket.fname)
+    params = dict(path=yadisk_fpath_no_ext + ticket.ext)
 
     resp = client.get("/resources/upload", params=params, headers=headers)
     if resp.status_code == 409:
-        params = dict(path=yadisk_fpath + " " + datetime.datetime.now().strftime("%d%m%y%H%M%S%f"))
+        params = dict(path=yadisk_fpath_no_ext + " " + datetime.datetime.now().strftime("%d%m%y%H%M%S%f") + ticket.ext)
         resp = client.get("/resources/upload", params=params, headers=headers)
         if resp.status_code != 200:
             raise HTTPException(500, "could not retrieve upload link from yandex")
@@ -89,6 +90,6 @@ def commence_upload(db, client, upload_link, ticket, params, fsize):
         raise HTTPException(500, "file wasnt uploaded in full")
 
     # TODO: here we need to also add a link, a final name as it is in dst, and perhaps an extension
-    change_ticket_status_returning_ticket(db, ticket.id, Status.COMPLETED)
+    change_ticket_status_returning_ticket(db, ticket.id, Status.COMPLETED, finished_at=datetime.datetime.now())
 
     return resp.json()["public_url"]

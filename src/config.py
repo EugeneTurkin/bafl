@@ -8,7 +8,7 @@ from pydantic.types import SecretStr
 
 class Config(BaseSettings):
     ROOTDIR: Path = Path(__file__).parent.parent
-    FILES_DIR: Path = ROOTDIR / "files" # TODO: надо создавать вручную
+    FILES_DIR: Path = ROOTDIR / "files"
     NETWORK_STORAGE: Path
     STORAGE_DIR: Path
 

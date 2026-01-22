@@ -32,8 +32,8 @@ async def home(db: DB, request: Request):
 
 @router.get("/upload", response_class=HTMLResponse)
 async def upload(request: Request):
-    # files = [file.name for file in os.scandir(config.NETWORK_STORAGE / config.STORAGE_DIR)]
-    files = [file.name for file in sorted(os.scandir(config.UPLOAD_DST), key=lambda x: x.stat().st_mtime, reverse=True) if file.is_file()]  # TODO: на этом и аналогичных вызовах, если хранилище недоступно, упадём с ошибкой. нужно обработать, прикрутить хэндлер, указать в сигне эндпоинта возможные статус коды. ещё надо проверять права потому что у сервера может не оказаться прав на чтение
+    # TODO: на этом и аналогичных вызовах, если хранилище недоступно, упадём с ошибкой. нужно обработать, прикрутить хэндлер, указать в сигне эндпоинта возможные статус коды. ещё надо проверять права потому что у сервера может не оказаться прав на чтение
+    files = [file.name for file in sorted(os.scandir(config.UPLOAD_DST), key=lambda x: x.stat().st_mtime, reverse=True) if file.is_file()]
     try:
         files.remove("Thumbs.db")
     except ValueError:

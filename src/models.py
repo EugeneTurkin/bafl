@@ -65,15 +65,15 @@ class UploadData(BaseModel):
         return fpath
 
 
-class UploadTicket(BaseModel):
-    id: int
-    ticket_type: str
-    created_at: datetime
-    creation_ip: str | None = Field(default=None)
-    finished_at: datetime | None = Field(default=None)
-    status: Status
-    src: str
-    dst: str
-    fname: str
-    rename: str | None = Field(default=None)
-    notif_email: str
+# class UploadTicket(BaseModel):
+#     id: int
+#     ticket_type: str
+#     created_at: datetime
+#     creation_ip: str | None = Field(default=None)
+#     finished_at: datetime | None = Field(default=None)
+#     status: Status
+#     src: str
+#     dst: str
+#     fname: str
+#     rename: str | None = Field(default=None)
+#     notif_email: str

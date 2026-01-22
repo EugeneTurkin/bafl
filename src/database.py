@@ -28,17 +28,5 @@ async def get_db():
             await session.close()  # Always close session
 
 
-def get_sync_db() -> Iterator[scoped_session[Session]]:  # pragma: no cover
-    """Create session for a request then close it when request is done."""
-    try:  # pylint: disable=too-many-try-statements
-        yield sync_session
-        sync_session.commit()
-    except Exception:  # noqa: BLE001
-        sync_session.rollback()
-    finally:
-        sync_session.close()
-
-
 # used by FastAPI routes to inject database session dependency
-syncDB = Annotated[Session, Depends(get_db)]
 DB = Annotated[AsyncSession, Depends(get_db)]
