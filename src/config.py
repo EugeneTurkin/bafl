@@ -24,4 +24,4 @@ class Config(BaseSettings):
 
 
 config = Config()
-huey = SqliteHuey("bafl", filename=config.ROOTDIR / "huey.sqlite", immediate=True)
+huey = SqliteHuey("bafl", filename=config.ROOTDIR / "huey.sqlite", immediate=False)
