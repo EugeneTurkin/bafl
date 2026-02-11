@@ -35,7 +35,7 @@ def test_task(id: int):
 
                 public_url = commence_upload(db, client, upload_link, ticket, params, fsize)
 
-                email.send(
+                email.send(  # TODO: move server email creds to .env file
                     subject=f"cсылка -- {ticket.fname}",
                     sender="test@komigor.com",
                     receivers=[ticket.notif_email],

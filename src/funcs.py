@@ -26,7 +26,7 @@ def change_ticket_status_returning_ticket(db: Session, id: int, status: Status, 
         ticket.finished_at = finished_at
     db.add(ticket)
     db.commit()
-    db.close()
+    # db.close()
     return ticket
 
 
